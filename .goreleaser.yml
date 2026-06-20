@@ -1,0 +1,47 @@
+version: 2
+
+project_name: checksy
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: checksy
+    main: ./cmd/checksy
+    binary: checksy
+    ldflags:
+      - -s -w
+      - -X github.com/flexdinesh/checksy/internal/version.Version={{.Version}}
+      - -X github.com/flexdinesh/checksy/internal/version.Commit={{.Commit}}
+      - -X github.com/flexdinesh/checksy/internal/version.Date={{.Date}}
+    goos:
+      - darwin
+      - linux
+    goarch:
+      - amd64
+      - arm64
+
+archives:
+  - id: default
+    ids:
+      - checksy
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+
+checksum:
+  name_template: checksums.txt
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+
+release:
+  github:
+    owner: flexdinesh
+    name: checksy
+  draft: false
+  prerelease: auto
