@@ -9,7 +9,7 @@ import (
 
 	"github.com/flexdinesh/checksy/internal/args"
 	"github.com/flexdinesh/checksy/internal/check"
-	"github.com/flexdinesh/checksy/internal/tui"
+	"github.com/flexdinesh/checksy/internal/report"
 	"github.com/flexdinesh/checksy/internal/version"
 )
 
@@ -18,7 +18,7 @@ func main() {
 }
 
 func run(argv []string, runner check.Runner, out io.Writer) int {
-	return runWithDeps(argv, runner, check.Discover, tui.Run, out)
+	return runWithDeps(argv, runner, check.Discover, report.Run, out)
 }
 
 type discoverer func(context.Context, time.Duration) check.Facts

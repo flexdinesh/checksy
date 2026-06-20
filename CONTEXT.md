@@ -1,6 +1,6 @@
 # checksy
 
-A small Go CLI that verifies internet connectivity by running a set of connectivity checks against public targets and rendering the results in a Bubble Tea TUI (or returning a pass/fail exit code).
+A small Go CLI that verifies internet connectivity by running a set of connectivity checks against public targets and rendering a one-shot terminal report (or returning a pass/fail exit code).
 
 ## Language
 
@@ -15,3 +15,7 @@ _Avoid_: endpoint, host, destination
 **Result**:
 The outcome of running a check: status (ok/fail), latency, and any discovered detail.
 _Avoid_: outcome, response
+
+**Terminal report**:
+The non-interactive, pretty terminal output written once after checks complete.
+_Avoid_: TUI, dashboard, screen
