@@ -94,9 +94,10 @@ func TestGoReleaserPublishesHomebrewTapPullRequest(t *testing.T) {
 		"enabled: true",
 		"directory: Casks",
 		"homepage: https://github.com/flexdinesh/checksy",
-		"verified: github.com/flexdinesh/checksy/",
 		"binaries:",
 		"- checksy",
+		"caveats:",
+		"Run `checksy --help` to view available command-line options.",
 	} {
 		if !strings.Contains(config, want) {
 			t.Fatalf(".goreleaser.yaml should contain %q", want)

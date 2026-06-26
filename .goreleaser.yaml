@@ -85,7 +85,7 @@ homebrew_casks:
     directory: Casks
     homepage: https://github.com/flexdinesh/checksy
     description: Internet connectivity checker with HTTP, ping, DNS, and IP diagnostics
-    url:
-      verified: github.com/flexdinesh/checksy/
     binaries:
       - checksy
+    caveats: |
+      Run `checksy --help` to view available command-line options.
