@@ -7,7 +7,7 @@ checksy is a small Go CLI that runs a fixed set of connectivity checks against p
 Stable Homebrew install:
 
 ```bash
-brew install flexdinesh/tap/checksy
+brew install --cask flexdinesh/tap/checksy
 ```
 
 Alternative stable install with Go:

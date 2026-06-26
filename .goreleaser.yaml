@@ -65,7 +65,7 @@ changelog:
       - '^Merge pull request'
       - '^Merge branch'
 
-brews:
+homebrew_casks:
   - name: checksy
     repository:
       owner: flexdinesh
@@ -82,8 +82,10 @@ brews:
       name: github-actions[bot]
       email: 41898282+github-actions[bot]@users.noreply.github.com
     commit_msg_template: "Update checksy to {{ .Tag }}"
-    directory: Formula
+    directory: Casks
     homepage: https://github.com/flexdinesh/checksy
     description: Internet connectivity checker with HTTP, ping, DNS, and IP diagnostics
-    test: |
-      assert_match version.to_s, shell_output("#{bin}/checksy --version")
+    url:
+      verified: github.com/flexdinesh/checksy/
+    binaries:
+      - checksy

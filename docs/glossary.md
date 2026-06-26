@@ -2,13 +2,13 @@
 
 ## Homebrew Tap
 
-A Git repository that Homebrew can read formulae from. `checksy` uses the
-`flexdinesh/homebrew-tap` tap for stable Homebrew installs.
+A Git repository that Homebrew can read formulae and casks from. `checksy` uses
+the `flexdinesh/homebrew-tap` tap for stable Homebrew installs.
 
 ## Stable Release
 
 A SemVer Git tag on `main`, such as `v0.1.0`, that GoReleaser turns into GitHub
-Release artifacts and a Homebrew formula update.
+Release artifacts and a Homebrew cask update.
 
 ## GoReleaser Snapshot
 
