@@ -51,12 +51,10 @@ The internet verdict is driven by the HTTP connectivity check. Ping and DNS rows
 
 ## Development
 
-```bash
-go test ./...
-```
+See [docs/development.md](docs/development.md).
 
 The ICMP fallback decision is documented in [docs/adr/0001-icmp-with-tcp-fallback.md](docs/adr/0001-icmp-with-tcp-fallback.md).
 
 ## Releases
 
-Releases are created from `main` with GoReleaser and GitHub Actions. Version metadata is stamped into the binary at release time.
+Releases are created from `main`. See [docs/release.md](docs/release.md).
