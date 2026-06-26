@@ -12,6 +12,8 @@ builds:
     binary: checksy
     env:
       - CGO_ENABLED=0
+    flags:
+      - -trimpath
     goos:
       - darwin
       - linux
@@ -38,6 +40,9 @@ archives:
 checksum:
   name_template: checksums.txt
 
+release:
+  replace_existing_artifacts: true
+
 changelog:
   sort: asc
   groups:
@@ -59,3 +64,26 @@ changelog:
     exclude:
       - '^Merge pull request'
       - '^Merge branch'
+
+brews:
+  - name: checksy
+    repository:
+      owner: flexdinesh
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
+      branch: "checksy-{{ .Tag }}"
+      pull_request:
+        enabled: true
+        base:
+          owner: flexdinesh
+          name: homebrew-tap
+          branch: main
+    commit_author:
+      name: github-actions[bot]
+      email: 41898282+github-actions[bot]@users.noreply.github.com
+    commit_msg_template: "Update checksy to {{ .Tag }}"
+    directory: Formula
+    homepage: https://github.com/flexdinesh/checksy
+    description: Internet connectivity checker with HTTP, ping, DNS, and IP diagnostics
+    test: |
+      assert_match version.to_s, shell_output("#{bin}/checksy --version")

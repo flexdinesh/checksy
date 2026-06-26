@@ -17,15 +17,22 @@ v0.1.1
 v0.1.2
 ```
 
-The GitHub Actions release workflow creates the tag, runs GoReleaser, and
-publishes macOS and Linux archives plus checksums.
+The workflow creates the tag, runs GoReleaser, publishes macOS and Linux
+archives plus checksums, and opens or updates a pull request against
+`flexdinesh/homebrew-tap`.
+
+Do not create a moving `latest` tag. Go already resolves `@latest` to the newest
+SemVer tag.
 
 Pushes to `dev` still run automatic GoReleaser snapshot releases through CI.
 
 ## Installing
 
 ```bash
-# Latest release.
+# Stable Homebrew install.
+brew install flexdinesh/tap/checksy
+
+# Alternative latest Go release.
 go install github.com/flexdinesh/checksy/cmd/checksy@latest
 
 # Specific release.
@@ -44,6 +51,52 @@ the release tag through GoReleaser linker flags.
 checksy --version
 ```
 
+## Required Secret
+
+The release workflow requires:
+
+- `HOMEBREW_TAP_TOKEN`: a fine-grained GitHub token with contents write and pull request write access to `flexdinesh/homebrew-tap`.
+
+The workflow also uses the built-in `GITHUB_TOKEN` to create tags and publish
+the GitHub Release in this repository.
+
+## Homebrew
+
+The Homebrew formula installs prebuilt release archives instead of building from
+source. `checksy` does not declare Homebrew runtime dependencies because the
+released binary contains the connectivity-checking implementation.
+
+The tap pull request branch is deterministic per version, such as
+`checksy-v0.1.0`, so rerunning a failed release updates the same tap pull
+request.
+
+The release also replaces existing GitHub Release artifacts on rerun. If a
+workflow publishes the GitHub Release but fails while opening the Homebrew tap
+pull request, rerunning the same workflow on the same commit should reuse the tag,
+refresh the release artifacts, and retry the tap pull request.
+
+## Release Steps
+
+1. Merge the release-ready code to `main`.
+2. Run the **Release** workflow from GitHub Actions.
+3. Confirm the workflow created or reused the expected `v0.1.x` tag.
+4. Review the generated GitHub Release artifacts and checksums.
+5. Merge the generated `flexdinesh/homebrew-tap` pull request after tap CI passes.
+6. Verify with `brew install flexdinesh/tap/checksy` and `checksy --version`.
+
+## Verify Locally
+
+```bash
+go test ./...
+go build ./cmd/checksy
+goreleaser release --snapshot --clean
+```
+
+The workflows pin GoReleaser `v2.9.0` because GoReleaser deprecated formula
+publishing through `brews` in later versions. The snapshot command remains useful
+locally with newer GoReleaser versions because it verifies archive and formula
+generation without publishing.
+
 ## Switching Minor Versions
 
 Switch manually when `0.1.x` no longer feels right, for example when a release
@@ -59,6 +112,3 @@ v0.2.0
 v0.2.1
 v0.2.2
 ```
-
-Do not create a moving `latest` tag. Go already resolves `@latest` to the newest
-SemVer tag.

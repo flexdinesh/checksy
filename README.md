@@ -4,7 +4,13 @@ checksy is a small Go CLI that runs a fixed set of connectivity checks against p
 
 ## Install
 
-Make sure you have [go](https://go.dev) installed in your machine. If you're on MacOS, [brew](https://formulae.brew.sh/formula/go) is the easiest way.
+Stable Homebrew install:
+
+```bash
+brew install flexdinesh/tap/checksy
+```
+
+Alternative stable install with Go:
 
 `@latest` resolves to the newest stable SemVer tag, such as `v0.1.0`. There is no moving `latest` Git tag.
 
