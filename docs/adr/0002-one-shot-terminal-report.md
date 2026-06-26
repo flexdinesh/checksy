@@ -4,6 +4,8 @@ CheckSy runs a fixed set of connectivity checks and exits. There is no live stat
 
 We render a pretty one-shot terminal report to stdout instead of launching an interactive Bubble Tea TUI or using the terminal alternate screen. The report keeps the compact verdict table, discovered facts, and verbose details, but it returns immediately after writing output.
 
+Discovered facts may include public IP, default-route local IP, default gateway, and resolver. These stay in the report header because they describe local/network context, not individual connectivity checks.
+
 ## Considered options
 
 - **Interactive TUI in the alternate screen.** Rejected: it makes users quit the interface after a fixed check run, hides output from shell scrollback, and adds interactivity without a current workflow.

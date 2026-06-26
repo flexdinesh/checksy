@@ -18,7 +18,7 @@ func TestRunWritesOneShotTerminalReport(t *testing.T) {
 		Latency: 142700 * time.Microsecond,
 		Detail:  "204",
 	}}
-	facts := check.Facts{PublicIP: "203.0.113.42", Resolver: "192.168.1.1"}
+	facts := check.Facts{PublicIP: "203.0.113.42", LocalIP: "192.168.1.23", Gateway: "192.168.1.1", Resolver: "192.168.1.1"}
 
 	var out bytes.Buffer
 	if err := report.Run(&out, results, facts, false); err != nil {
@@ -28,7 +28,7 @@ func TestRunWritesOneShotTerminalReport(t *testing.T) {
 	got := out.String()
 	for _, want := range []string{
 		"checksy • internet UP",
-		"ip 203.0.113.42    resolver 192.168.1.1",
+		"ip 203.0.113.42    local ip 192.168.1.23    gateway 192.168.1.1    resolver 192.168.1.1",
 		"TARGET",
 		"gstatic.com",
 		"http",

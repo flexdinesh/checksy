@@ -15,19 +15,25 @@ const TraceURL = "https://www.cloudflare.com/cdn-cgi/trace"
 // Facts are discovered details shown in the verdict header, not the table.
 type Facts struct {
 	PublicIP  string
+	LocalIP   string
+	Gateway   string
 	Resolver  string
 	TraceBody string
 }
 
-// Discover fetches the public egress IP and reads the system resolver. Either
-// field is left blank on failure — the header degrades gracefully.
+// Discover gathers network facts for the report header. Fields are left blank
+// on failure so the header degrades gracefully.
 func Discover(ctx context.Context, timeout time.Duration) Facts {
 	traceCtx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
+	localIP := defaultLocalIP(traceCtx, defaultRouteTarget)
+	gateway := defaultGateway(traceCtx)
 	body := fetchTraceBody(traceCtx, TraceURL)
 	return Facts{
 		PublicIP:  parseTrace(body),
+		LocalIP:   localIP,
+		Gateway:   gateway,
 		Resolver:  systemResolver("/etc/resolv.conf"),
 		TraceBody: body,
 	}

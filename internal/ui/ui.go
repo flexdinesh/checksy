@@ -26,17 +26,23 @@ func FormatLatency(d time.Duration) string {
 	return fmt.Sprintf("%.1fms", float64(d.Microseconds())/1000.0)
 }
 
-// FactsLine renders the discovered public IP and system resolver for the header.
+// FactsLine renders discovered network facts for the header.
 // Blank fields are omitted; the line is empty when nothing was discovered.
 func FactsLine(facts check.Facts) string {
 	parts := []string{}
 	if facts.PublicIP != "" {
 		parts = append(parts, "ip "+facts.PublicIP)
 	}
+	if facts.LocalIP != "" {
+		parts = append(parts, "local ip "+facts.LocalIP)
+	}
+	if facts.Gateway != "" {
+		parts = append(parts, "gateway "+facts.Gateway)
+	}
 	if facts.Resolver != "" {
 		parts = append(parts, "resolver "+facts.Resolver)
 	}
-	return strings.Join(parts, "    ")
+	return strings.Join(parts, "\n")
 }
 
 // Detail shapes the polymorphic detail column for a result. By default a

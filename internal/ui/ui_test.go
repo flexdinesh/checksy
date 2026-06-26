@@ -2,7 +2,6 @@ package ui
 
 import (
 	"errors"
-	"strings"
 	"testing"
 	"time"
 
@@ -50,28 +49,20 @@ func TestFormatLatency(t *testing.T) {
 
 func TestFactsLine(t *testing.T) {
 	tests := []struct {
-		name   string
-		facts  check.Facts
-		wantIn []string
+		name  string
+		facts check.Facts
+		want  string
 	}{
-		{name: "both", facts: check.Facts{PublicIP: "203.0.113.42", Resolver: "192.168.1.1"}, wantIn: []string{"ip", "203.0.113.42", "resolver", "192.168.1.1"}},
-		{name: "only ip", facts: check.Facts{PublicIP: "203.0.113.42"}, wantIn: []string{"ip", "203.0.113.42"}},
-		{name: "only resolver", facts: check.Facts{Resolver: "192.168.1.1"}, wantIn: []string{"resolver", "192.168.1.1"}},
-		{name: "neither is blank", facts: check.Facts{}, wantIn: nil},
+		{name: "all", facts: check.Facts{PublicIP: "203.0.113.42", LocalIP: "192.168.1.23", Gateway: "192.168.1.1", Resolver: "192.168.1.1"}, want: "ip 203.0.113.42\nlocal ip 192.168.1.23\ngateway 192.168.1.1\nresolver 192.168.1.1"},
+		{name: "only ip", facts: check.Facts{PublicIP: "203.0.113.42"}, want: "ip 203.0.113.42"},
+		{name: "only resolver", facts: check.Facts{Resolver: "192.168.1.1"}, want: "resolver 192.168.1.1"},
+		{name: "neither is blank", facts: check.Facts{}, want: ""},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			got := FactsLine(test.facts)
-			if len(test.wantIn) == 0 {
-				if got != "" {
-					t.Fatalf("expected blank, got %q", got)
-				}
-				return
-			}
-			for _, fragment := range test.wantIn {
-				if !strings.Contains(got, fragment) {
-					t.Errorf("expected %q to contain %q", got, fragment)
-				}
+			if got != test.want {
+				t.Fatalf("expected %q, got %q", test.want, got)
 			}
 		})
 	}
