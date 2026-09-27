@@ -41,6 +41,8 @@ checksum:
   name_template: checksums.txt
 
 release:
+  prerelease: false
+  make_latest: true
   replace_existing_artifacts: true
 
 changelog:

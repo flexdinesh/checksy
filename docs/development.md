@@ -18,7 +18,7 @@ go install ./cmd/checksy
 
 `[skip ci]` can be used as a temporary escape hatch when a commit should skip
 GitHub Actions, such as a docs-only change that should not run release
-automation.
+automation. This also skips the automatic `dev` update for that push to `main`.
 
 ```bash
 git commit -m "docs: update readme [skip ci]"

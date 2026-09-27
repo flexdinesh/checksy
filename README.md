@@ -22,6 +22,13 @@ go install github.com/flexdinesh/checksy/cmd/checksy@latest
 go install github.com/flexdinesh/checksy/cmd/checksy@v0.1.0
 ```
 
+Stable versions are published only through the manual **Release** workflow.
+Every push to `main` updates `dev` after CI passes:
+
+```bash
+go install github.com/flexdinesh/checksy/cmd/checksy@dev
+```
+
 ## Usage
 
 ```bash

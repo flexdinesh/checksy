@@ -2,6 +2,7 @@ package checksy_test
 
 import (
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -27,7 +28,7 @@ func TestReleaseIdentityIsCanonical(t *testing.T) {
 	}
 }
 
-func TestGoReleaserPackagesSnapshotsForSupportedPlatforms(t *testing.T) {
+func TestGoReleaserPackagesStableReleasesForSupportedPlatforms(t *testing.T) {
 	config := readFile(t, ".goreleaser.yaml")
 	for _, want := range []string{
 		"project_name: checksy",
@@ -41,6 +42,8 @@ func TestGoReleaserPackagesSnapshotsForSupportedPlatforms(t *testing.T) {
 		"arm64",
 		"-X github.com/flexdinesh/checksy/internal/version.Version={{.Version}}",
 		"checksums.txt",
+		"prerelease: false",
+		"make_latest: true",
 		"replace_existing_artifacts: true",
 	} {
 		if !strings.Contains(config, want) {
@@ -52,13 +55,122 @@ func TestGoReleaserPackagesSnapshotsForSupportedPlatforms(t *testing.T) {
 	for _, want := range []string{
 		"go test ./...",
 		"go build ./cmd/checksy",
-		"version: v2.18.0",
-		"args: release --snapshot --clean",
 	} {
 		if !strings.Contains(ci, want) {
 			t.Fatalf("CI workflow should contain %q", want)
 		}
 	}
+}
+
+func TestDevWorkflowPublishesOnlyAfterMainPassesCI(t *testing.T) {
+	workflow := readFile(t, ".github/workflows/ci.yml")
+	for _, want := range []string{
+		"needs: test",
+		"if: github.event_name == 'push' && github.ref == 'refs/heads/main'",
+		"contents: write",
+		"group: publish-dev",
+		"cancel-in-progress: false",
+		"fetch-depth: 0",
+	} {
+		if !strings.Contains(workflow, want) {
+			t.Fatalf("CI workflow should contain %q", want)
+		}
+	}
+	for _, obsolete := range []string{"- dev", "refs/heads/dev'", "goreleaser", "git tag"} {
+		if strings.Contains(workflow, obsolete) {
+			t.Fatalf("CI workflow should not contain %q", obsolete)
+		}
+	}
+}
+
+func TestDevPublicationTracksMainWithoutChangingStableTags(t *testing.T) {
+	workflow := readFile(t, ".github/workflows/ci.yml")
+	_, step, ok := strings.Cut(workflow, "      - name: Publish dev branch\n")
+	if !ok {
+		t.Fatal("missing dev publication step")
+	}
+	_, block, ok := strings.Cut(step, "        run: |\n")
+	if !ok {
+		t.Fatal("missing dev publication script")
+	}
+	var script strings.Builder
+	for _, line := range strings.Split(block, "\n") {
+		if line != "" && !strings.HasPrefix(line, "          ") {
+			break
+		}
+		script.WriteString(strings.TrimPrefix(line, "          ") + "\n")
+	}
+
+	root := t.TempDir()
+	run := func(dir, name string, args ...string) string {
+		t.Helper()
+		cmd := exec.Command(name, args...)
+		cmd.Dir = dir
+		output, err := cmd.CombinedOutput()
+		if err != nil {
+			t.Fatalf("%s %v: %v\n%s", name, args, err, output)
+		}
+		return strings.TrimSpace(string(output))
+	}
+	remote := filepath.Join(root, "origin.git")
+	checkout := filepath.Join(root, "checkout")
+	run(root, "git", "init", "--bare", "--initial-branch=main", remote)
+	run(root, "git", "clone", remote, checkout)
+	run(checkout, "git", "config", "user.name", "Release test")
+	run(checkout, "git", "config", "user.email", "release@example.com")
+	run(checkout, "git", "config", "commit.gpgsign", "false")
+	run(checkout, "git", "config", "tag.gpgsign", "false")
+	run(checkout, "git", "commit", "--allow-empty", "-m", "Stable release")
+	stable := run(checkout, "git", "rev-parse", "HEAD")
+	run(checkout, "git", "tag", "v0.1.0")
+	run(checkout, "git", "push", "origin", "main", "refs/tags/v0.1.0")
+
+	assertDev := func(want string) {
+		t.Helper()
+		if got := run(remote, "git", "rev-parse", "refs/heads/dev"); got != want {
+			t.Fatalf("dev = %s, want %s", got, want)
+		}
+		if got := run(remote, "git", "show-ref", "--tags"); got != stable+" refs/tags/v0.1.0" {
+			t.Fatalf("stable tags changed: %s", got)
+		}
+	}
+	// First publication creates the branch, including when main is tagged.
+	run(checkout, "bash", "-c", script.String())
+	assertDev(stable)
+
+	run(checkout, "git", "commit", "--allow-empty", "-m", "Development change")
+	latest := run(checkout, "git", "rev-parse", "HEAD")
+	run(checkout, "git", "push", "origin", "main")
+
+	// A queued old run must not publish while the newer main awaits CI.
+	run(checkout, "git", "checkout", "--detach", stable)
+	run(checkout, "bash", "-c", script.String())
+	assertDev(stable)
+
+	// Detached Actions checkouts publish, and reruns are idempotent.
+	run(checkout, "git", "checkout", "--detach", latest)
+	run(checkout, "bash", "-c", script.String())
+	assertDev(latest)
+	run(checkout, "bash", "-c", script.String())
+	assertDev(latest)
+
+	// Rerunning an older workflow cannot roll dev back.
+	run(checkout, "git", "checkout", "--detach", stable)
+	run(checkout, "bash", "-c", script.String())
+	assertDev(latest)
+
+	// A conflicting update to dev must be rejected, never force-pushed away.
+	run(checkout, "git", "checkout", "--detach", latest)
+	run(checkout, "git", "commit", "--allow-empty", "-m", "Concurrent dev update")
+	concurrent := run(checkout, "git", "rev-parse", "HEAD")
+	run(checkout, "git", "push", "origin", "HEAD:refs/heads/dev")
+	run(checkout, "git", "checkout", "--detach", latest)
+	cmd := exec.Command("bash", "-c", script.String())
+	cmd.Dir = checkout
+	if output, err := cmd.CombinedOutput(); err == nil {
+		t.Fatalf("expected conflicting dev update to fail:\n%s", output)
+	}
+	assertDev(concurrent)
 }
 
 func TestStableReleaseWorkflowPublishesSemverTags(t *testing.T) {
@@ -78,6 +190,9 @@ func TestStableReleaseWorkflowPublishesSemverTags(t *testing.T) {
 		if !strings.Contains(workflow, want) {
 			t.Fatalf("release workflow should contain %q", want)
 		}
+	}
+	if strings.Contains(workflow, "  push:") || strings.Contains(workflow, "  pull_request:") {
+		t.Fatal("stable releases must only run via workflow_dispatch")
 	}
 }
 
