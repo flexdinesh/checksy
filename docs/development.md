@@ -14,6 +14,14 @@ go build -o bin/checksy ./cmd/checksy
 go install ./cmd/checksy
 ```
 
+## Install the dev version
+
+Every push to `main` updates `dev` after CI passes:
+
+```bash
+go install github.com/flexdinesh/checksy/cmd/checksy@dev
+```
+
 ## Skipping Actions
 
 `[skip ci]` can be used as a temporary escape hatch when a commit should skip
