@@ -12,10 +12,14 @@ const Usage = `Usage: checksy [options]
 
 Check internet connectivity against public targets.
 
-Options:
-  --exit-code         Silence output and exit 0 (up) or 1 (down); argument errors exit 2
+Report
   --timeout <dur>     Per-check timeout (default: 5s)
   --verbose           Show method, full error text, and raw response bodies
+
+Automation
+  --exit-code         Silent; exit 0 (up), 1 (down), 2 (argument error)
+
+Information
   --help              Show this help message
   --version           Show package version
 `

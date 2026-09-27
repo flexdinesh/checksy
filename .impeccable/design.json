@@ -1,0 +1,268 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-27T06:46:11.308Z",
+  "title": "Design System: checksy",
+  "extensions": {
+    "colorMeta": {
+      "primary-light": {
+        "role": "primary",
+        "displayName": "Clear Blue (light)",
+        "theme": "light"
+      },
+      "primary-dark": {
+        "role": "primary",
+        "displayName": "Clear Blue (dark)",
+        "theme": "dark"
+      },
+      "secondary-light": {
+        "role": "secondary",
+        "displayName": "Diagnostic Violet (light)",
+        "theme": "light"
+      },
+      "secondary-dark": {
+        "role": "secondary",
+        "displayName": "Diagnostic Violet (dark)",
+        "theme": "dark"
+      },
+      "success-light": {
+        "role": "tertiary",
+        "displayName": "Positive Green (light)",
+        "theme": "light"
+      },
+      "success-dark": {
+        "role": "tertiary",
+        "displayName": "Positive Green (dark)",
+        "theme": "dark"
+      },
+      "failure-light": {
+        "role": "tertiary",
+        "displayName": "Failure Red (light)",
+        "theme": "light"
+      },
+      "failure-dark": {
+        "role": "tertiary",
+        "displayName": "Failure Red (dark)",
+        "theme": "dark"
+      },
+      "warning-light": {
+        "role": "tertiary",
+        "displayName": "Recovery Amber (light)",
+        "theme": "light"
+      },
+      "warning-dark": {
+        "role": "tertiary",
+        "displayName": "Recovery Amber (dark)",
+        "theme": "dark"
+      },
+      "neutral-light": {
+        "role": "neutral",
+        "displayName": "Quiet Slate (light)",
+        "theme": "light"
+      },
+      "neutral-dark": {
+        "role": "neutral",
+        "displayName": "Quiet Slate (dark)",
+        "theme": "dark"
+      }
+    },
+    "terminal": {
+      "sourceFiles": [
+        "internal/report/terminal.go",
+        "internal/report/report.go",
+        "internal/args/args.go",
+        "cmd/checksy/main.go"
+      ],
+      "defaultPalette": {
+        "primary": {
+          "ansiSlot": 4
+        },
+        "secondary": {
+          "ansiSlot": 5
+        },
+        "success": {
+          "ansiSlot": 2
+        },
+        "failure": {
+          "ansiSlot": 1
+        },
+        "warning": {
+          "ansiSlot": 3
+        },
+        "neutral": {
+          "inheritForeground": true
+        }
+      },
+      "themes": {
+        "light": {
+          "primary": "{colors.primary-light}",
+          "secondary": "{colors.secondary-light}",
+          "success": "{colors.success-light}",
+          "failure": "{colors.failure-light}",
+          "warning": "{colors.warning-light}",
+          "neutral": "{colors.neutral-light}"
+        },
+        "dark": {
+          "primary": "{colors.primary-dark}",
+          "secondary": "{colors.secondary-dark}",
+          "success": "{colors.success-dark}",
+          "failure": "{colors.failure-dark}",
+          "warning": "{colors.warning-dark}",
+          "neutral": "{colors.neutral-dark}"
+        }
+      },
+      "themeSelection": [
+        "CHECKSY_THEME=light|dark",
+        "Recognized COLORFGBG background index (0–15)",
+        "Terminal ANSI palette when theme unknown"
+      ],
+      "capabilities": {
+        "ansiOnly": "Use terminal ANSI slots even when the theme is known.",
+        "knownTheme": "Use paired foregrounds at truecolor/256-color capability.",
+        "plain": "Non-terminal writer, NO_COLOR, or TERM=dumb disables color.",
+        "queries": "No terminal theme queries."
+      },
+      "typography": {
+        "font": "Inherited from terminal",
+        "metrics": "Inherited terminal cells",
+        "emphasis": "ANSI bold: brand, verdict, section/usage/error labels",
+        "case": "Uppercase check kinds and ledger headings"
+      },
+      "width": {
+        "fallbackColumns": 80,
+        "precedence": [
+          "Terminal size",
+          "COLUMNS",
+          "Fallback"
+        ],
+        "minimumColumns": 1
+      },
+      "layout": {
+        "columnGap": 2,
+        "statusColumns": 6,
+        "checkColumns": 5,
+        "targetMinimumColumns": 6,
+        "targetMaximum": "One third of terminal width",
+        "latencyMinimumColumns": 7,
+        "latencyAlignment": "right",
+        "minimumDetailColumns": 10,
+        "continuationIndentColumns": 2,
+        "factMinimumGapColumns": 3,
+        "helpWideMinimumColumns": 50,
+        "helpFlagColumns": 16
+      },
+      "depth": "Flat text; no shadows, surfaces, overlays, or motion.",
+      "previewTranslation": "HTML snippets are static light-theme translations of actual terminal patterns, not shipping HTML or app typography/background tokens. Browser preformatted text supplies preview metrics; the canvas is inherited. Network data is synthetic.",
+      "contrastEvidence": {
+        "lightMinimumRatio": 5.14,
+        "darkMinimumRatio": 8.17,
+        "grounds": "White and #14181f are review references only; the product inherits its terminal background.",
+        "scope": "Curated paired shades; native ANSI colors remain owned by the terminal."
+      },
+      "evidence": [
+        ".impeccable/review/overview.png",
+        ".impeccable/review/light-80.png",
+        ".impeccable/review/dark-80.png",
+        ".impeccable/review/light-40.png",
+        ".impeccable/review/dark-40-ipv6.png",
+        ".impeccable/review/plain-40.png",
+        ".impeccable/review/verbose-dark-80.png",
+        ".impeccable/review/help-light-80.png",
+        ".impeccable/review/help-dark-40.png",
+        ".impeccable/review/error-light-40.png",
+        ".impeccable/review/version-dark-80.png"
+      ]
+    }
+  },
+  "components": [
+    {
+      "name": "Verdict line",
+      "kind": "custom",
+      "refersTo": "status-ok-light",
+      "description": "Brand and HTTP verdict; words remain readable without color.",
+      "html": "<pre class=\"ds-terminal\"><strong class=\"ds-primary\">checksy</strong> • internet <strong class=\"ds-success\">UP</strong>\n<span class=\"ds-neutral\">─────────────────────────</span></pre>",
+      "css": ".ds-terminal { white-space: pre-wrap; overflow-wrap: anywhere; } .ds-primary { color: #245ea8; } .ds-secondary { color: #7846a2; } .ds-success { color: #187649; } .ds-failure { color: #b12e45; } .ds-warning { color: #96630b; } .ds-neutral { color: #566378; }"
+    },
+    {
+      "name": "Check ledger",
+      "kind": "custom",
+      "refersTo": "secondary-label-light",
+      "description": "Open wide rows; narrow output wraps into header/detail pairs.",
+      "html": "<pre class=\"ds-terminal\"><span class=\"ds-neutral\">STATUS</span>  <span class=\"ds-secondary\">CHECK</span>  <span class=\"ds-neutral\">TARGET            LATENCY  DETAIL</span>\n<span class=\"ds-success\">✓ ok</span>    <span class=\"ds-secondary\">HTTP </span>  gstatic.com       145.8ms  204\n<span class=\"ds-failure\">✗ fail</span>  <span class=\"ds-secondary\">DNS  </span>  one.one.one.one     5.0ms  lookup failed</pre>",
+      "css": ".ds-terminal { white-space: pre-wrap; overflow-wrap: anywhere; } .ds-primary { color: #245ea8; } .ds-secondary { color: #7846a2; } .ds-success { color: #187649; } .ds-failure { color: #b12e45; } .ds-warning { color: #96630b; } .ds-neutral { color: #566378; }"
+    },
+    {
+      "name": "Network facts",
+      "kind": "custom",
+      "refersTo": "primary-label-light",
+      "description": "Available facts pair when they fit and otherwise stack.",
+      "html": "<pre class=\"ds-terminal\"><span class=\"ds-primary\">Public IP</span> 203.0.113.42   <span class=\"ds-primary\">Local IP</span> 192.168.1.23\n<span class=\"ds-primary\">Gateway</span> 192.168.1.1      <span class=\"ds-primary\">Resolver</span> 192.168.1.1</pre>",
+      "css": ".ds-terminal { white-space: pre-wrap; overflow-wrap: anywhere; } .ds-primary { color: #245ea8; } .ds-secondary { color: #7846a2; } .ds-success { color: #187649; } .ds-failure { color: #b12e45; } .ds-warning { color: #96630b; } .ds-neutral { color: #566378; }"
+    },
+    {
+      "name": "Verbose appendix",
+      "kind": "custom",
+      "refersTo": "secondary-label-light",
+      "description": "Full measurement details and raw trace follow the summary.",
+      "html": "<pre class=\"ds-terminal\"><strong class=\"ds-secondary\">Details</strong>\n<span class=\"ds-primary\">1.1.1.1</span>  tcp • tcp: 443\n\n<strong class=\"ds-secondary\">Trace</strong>\nip=203.0.113.42</pre>",
+      "css": ".ds-terminal { white-space: pre-wrap; overflow-wrap: anywhere; } .ds-primary { color: #245ea8; } .ds-secondary { color: #7846a2; } .ds-success { color: #187649; } .ds-failure { color: #b12e45; } .ds-warning { color: #96630b; } .ds-neutral { color: #566378; }"
+    },
+    {
+      "name": "Help",
+      "kind": "custom",
+      "refersTo": "secondary-label-light",
+      "description": "Grouped existing flags, with labels shared across output.",
+      "html": "<pre class=\"ds-terminal\"><strong class=\"ds-secondary\">Usage:</strong> <strong class=\"ds-primary\">checksy</strong> [options]\n\n<strong class=\"ds-secondary\">Report</strong>\n  <span class=\"ds-primary\">--timeout &lt;dur&gt;</span>   Per-check timeout (default: 5s)\n  <span class=\"ds-primary\">--verbose</span>         Show method, full error text, and raw response bodies\n\n<strong class=\"ds-secondary\">Automation</strong>\n  <span class=\"ds-primary\">--exit-code</span>       Silent; exit 0 (up), 1 (down), 2 (argument error)\n\n<strong class=\"ds-secondary\">Information</strong>\n  <span class=\"ds-primary\">--help</span>            Show this help message\n  <span class=\"ds-primary\">--version</span>         Show package version</pre>",
+      "css": ".ds-terminal { white-space: pre-wrap; overflow-wrap: anywhere; } .ds-primary { color: #245ea8; } .ds-secondary { color: #7846a2; } .ds-success { color: #187649; } .ds-failure { color: #b12e45; } .ds-warning { color: #96630b; } .ds-neutral { color: #566378; }"
+    },
+    {
+      "name": "Argument error",
+      "kind": "custom",
+      "refersTo": "recovery-light",
+      "description": "An explanation followed by an actionable amber correction.",
+      "html": "<pre class=\"ds-terminal\"><strong class=\"ds-primary\">checksy</strong> • <strong class=\"ds-failure\">error</strong>\nInvalid --timeout value: abc\n<span class=\"ds-warning\">Try checksy --timeout 2s.</span></pre>",
+      "css": ".ds-terminal { white-space: pre-wrap; overflow-wrap: anywhere; } .ds-primary { color: #245ea8; } .ds-secondary { color: #7846a2; } .ds-success { color: #187649; } .ds-failure { color: #b12e45; } .ds-warning { color: #96630b; } .ds-neutral { color: #566378; }"
+    },
+    {
+      "name": "Version",
+      "kind": "custom",
+      "refersTo": "primary-label-light",
+      "description": "One wrapped line using the shared brand and label colors.",
+      "html": "<pre class=\"ds-terminal\"><strong class=\"ds-primary\">checksy</strong> <span class=\"ds-secondary\">v0.1.4+dirty</span></pre>",
+      "css": ".ds-terminal { white-space: pre-wrap; overflow-wrap: anywhere; } .ds-primary { color: #245ea8; } .ds-secondary { color: #7846a2; } .ds-success { color: #187649; } .ds-failure { color: #b12e45; } .ds-warning { color: #96630b; } .ds-neutral { color: #566378; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Network receipt",
+    "overview": "A compact, calm terminal report. One verdict leads an open check ledger and closing network facts. Color clarifies labels and results; words and semantic glyphs retain meaning without color.\n\nThe terminal supplies the background, font, and text metrics. Output remains in scrollback after the command exits. Help, version, and argument errors use the same visual language.",
+    "keyCharacteristics": [
+      "Open aligned rows, one thin divider.",
+      "Blue and violet labels; green, red, and amber meanings.",
+      "Terminal-native type, background, and monochrome behavior.",
+      "Width-aware wrapping; verbose details below the summary."
+    ],
+    "rules": [
+      {
+        "name": "The Terminal Ownership Rule",
+        "body": "Inherit the terminal background and ordinary foreground; never paint an enclosing surface.",
+        "section": "colors"
+      },
+      {
+        "name": "The Words Survive Rule",
+        "body": "Preserve status words and glyphs together so monochrome output remains understandable.",
+        "section": "typography"
+      }
+    ],
+    "dos": [
+      "Do preserve terminal-owned background, font, and ordinary foreground.",
+      "Do keep status words beside their semantic glyphs.",
+      "Do wrap long values and errors within the available terminal width.",
+      "Do use the same palette and hierarchy for report, help, version, and errors."
+    ],
+    "donts": [
+      "Don't add enclosing grids, fixed backgrounds, app font metrics, motion, or raster assets.",
+      "Don't rely on color alone to express a result.",
+      "Don't move verbose details above the compact summary.",
+      "Don't add interaction, an alternate screen, or a quit step."
+    ]
+  }
+}

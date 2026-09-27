@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"os"
 	"time"
@@ -18,26 +17,31 @@ func main() {
 }
 
 func run(argv []string, runner check.Runner, out io.Writer) int {
-	return runWithDeps(argv, runner, check.Discover, report.Run, out)
+	return runWithDeps(argv, runner, check.Discover, report.Run, out, os.Stderr)
 }
 
 type discoverer func(context.Context, time.Duration) check.Facts
 
 type renderer func(io.Writer, []check.Result, check.Facts, bool) error
 
-func runWithDeps(argv []string, runner check.Runner, discover discoverer, render renderer, out io.Writer) int {
+func runWithDeps(argv []string, runner check.Runner, discover discoverer, render renderer, out, errOut io.Writer) int {
 	parsed := args.Parse(argv)
 	if !parsed.OK {
+		report.Error(errOut, parsed.Err)
 		return 2
 	}
 	options := parsed.Options
 
 	if options.Help {
-		io.WriteString(out, args.Usage)
+		if err := report.Help(out); err != nil {
+			return 1
+		}
 		return 0
 	}
 	if options.Version {
-		fmt.Fprintf(out, "checksy %s\n", version.String())
+		if err := report.Version(out, version.String()); err != nil {
+			return 1
+		}
 		return 0
 	}
 
