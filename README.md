@@ -44,6 +44,19 @@ checksy --help
 checksy --version
 ```
 
+The terminal report puts the internet verdict first, followed by checks and
+network facts. Colors follow your terminal's palette; terminals that expose
+`COLORFGBG` receive matching light/dark shades. Override shades when needed:
+
+```bash
+CHECKSY_THEME=light checksy
+CHECKSY_THEME=dark checksy
+```
+
+`NO_COLOR=1` disables styling. Piped output stays free of ANSI escapes. Narrow
+terminals wrap checks and stack network facts; `--verbose` adds full details
+below the compact report. Argument errors appear on stderr with a recovery hint.
+
 ## Checks
 
 checksy runs these checks concurrently:

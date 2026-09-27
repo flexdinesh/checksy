@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/flexdinesh/checksy/internal/check"
+	"github.com/flexdinesh/checksy/internal/report"
 )
 
 func TestRunExitCodeIsSilentAndZeroWhenUp(t *testing.T) {
@@ -91,7 +92,7 @@ func TestRunRendersResultsWithDiscoveredFacts(t *testing.T) {
 	}
 
 	var out bytes.Buffer
-	code := runWithDeps(nil, runner, discover, render, &out)
+	code := runWithDeps(nil, runner, discover, render, &out, io.Discard)
 
 	if code != 0 {
 		t.Fatalf("expected exit code 0, got %d", code)
@@ -119,7 +120,7 @@ func TestRunPassesTimeoutAndVerboseToDependencies(t *testing.T) {
 		return nil
 	}
 
-	code := runWithDeps([]string{"--timeout", "2s", "--verbose"}, runner, discover, render, io.Discard)
+	code := runWithDeps([]string{"--timeout", "2s", "--verbose"}, runner, discover, render, io.Discard, io.Discard)
 
 	if code != 0 {
 		t.Fatalf("expected exit code 0, got %d", code)
@@ -132,5 +133,35 @@ func TestRunPassesTimeoutAndVerboseToDependencies(t *testing.T) {
 	}
 	if !renderedVerbose {
 		t.Fatal("expected verbose true to reach renderer")
+	}
+}
+
+func TestArgumentErrorsUseStderrWithoutRunningChecks(t *testing.T) {
+	for _, argv := range [][]string{{"--bogus"}, {"--timeout"}, {"--timeout", "abc"}, {"--exit-code", "--bogus"}} {
+		var out, errOut bytes.Buffer
+		runner := func(context.Context, time.Duration) []check.Result {
+			t.Fatal("argument error must not run network checks")
+			return nil
+		}
+		code := runWithDeps(argv, runner, check.Discover, report.Run, &out, &errOut)
+		if code != 2 || out.Len() != 0 {
+			t.Fatalf("want exit 2 and empty stdout; got %d, %q", code, out.String())
+		}
+		got := errOut.String()
+		if !strings.Contains(got, "error") || !strings.Contains(got, "checksy --") {
+			t.Fatalf("error needs reason and recovery: %q", got)
+		}
+	}
+}
+
+func TestReportModePreservesSuccessfulExitWhenInternetDown(t *testing.T) {
+	runner := func(context.Context, time.Duration) []check.Result {
+		return []check.Result{{Kind: check.KindHTTP, Status: check.StatusFail, Label: "gstatic.com", Detail: "timeout after 5s"}}
+	}
+	discover := func(context.Context, time.Duration) check.Facts { return check.Facts{} }
+	var out, errOut bytes.Buffer
+	code := runWithDeps(nil, runner, discover, report.Run, &out, &errOut)
+	if code != 0 || !strings.Contains(out.String(), "internet DOWN") || errOut.Len() != 0 {
+		t.Fatalf("normal report mode should display DOWN and exit 0; got %d, stdout=%q stderr=%q", code, out.String(), errOut.String())
 	}
 }
