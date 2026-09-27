@@ -42,7 +42,7 @@ func TestGoReleaserPackagesStableReleasesForSupportedPlatforms(t *testing.T) {
 		"arm64",
 		"-X github.com/flexdinesh/checksy/internal/version.Version={{.Version}}",
 		"checksums.txt",
-		"prerelease: false",
+		"prerelease: \"false\"",
 		"make_latest: true",
 		"replace_existing_artifacts: true",
 	} {
