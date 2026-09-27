@@ -1,6 +1,7 @@
 # Releases
 
-Releases are SemVer Git tags on `main`.
+Stable releases are SemVer Git tags on `main`. Development installs use the
+automatically updated `dev` branch.
 
 ## Current Policy
 
@@ -17,14 +18,23 @@ v0.1.1
 v0.1.2
 ```
 
-The workflow creates the tag, runs GoReleaser, publishes macOS and Linux
-archives plus checksums, and opens or updates a pull request against
+The workflow checks out the latest `main`, tests it, creates or reuses the tag,
+runs GoReleaser, publishes macOS and Linux archives plus checksums as the latest
+stable GitHub Release, and opens or updates a pull request against
 `flexdinesh/homebrew-tap`.
 
 Do not create a moving `latest` tag. Go already resolves `@latest` to the newest
 SemVer tag.
 
-Pushes to `dev` still run automatic GoReleaser snapshot releases through CI.
+Every push to `main` runs tests and builds the CLI, then advances the `dev`
+branch to that tested commit. Superseded runs skip publishing; updates are
+serialized and fast-forward only so an older run cannot roll `dev` back.
+Failed CI leaves `dev` at its previous commit. Treat `dev` as an automated
+installation channel; merge changes into `main` instead of pushing to `dev`.
+
+Go resolves `@dev` from that branch, usually as a pseudo-version. This creates
+no SemVer tags or GitHub Releases and leaves `@latest` on the newest stable
+version. The old workflow triggered by pushes to `dev` has been removed.
 
 ## Installing
 
@@ -42,10 +52,19 @@ go install github.com/flexdinesh/checksy/cmd/checksy@v0.1.0
 go install github.com/flexdinesh/checksy/cmd/checksy@dev
 ```
 
+Go module proxies may briefly cache the previous `dev` revision. To fetch
+directly from GitHub immediately after CI publishes:
+
+```bash
+GOPROXY=direct go install github.com/flexdinesh/checksy/cmd/checksy@dev
+```
+
 ## Version Output
 
-Local builds print a development version. Release builds get the version from
-the release tag through GoReleaser linker flags.
+Local builds print a development version. Release archives get the version from
+the release tag through GoReleaser linker flags. Go installs report the module
+version: a stable tag, or usually a pseudo-version for `@dev`. If `dev` points
+at a tagged stable commit, Go may report that stable version.
 
 ```bash
 checksy --version
@@ -58,7 +77,8 @@ The release workflow requires:
 - `HOMEBREW_TAP_TOKEN`: a fine-grained GitHub token with contents write and pull request write access to `flexdinesh/homebrew-tap`.
 
 The workflow also uses the built-in `GITHUB_TOKEN` to create tags and publish
-the GitHub Release in this repository.
+the GitHub Release in this repository. The CI `Publish dev` job uses only the
+built-in `GITHUB_TOKEN` with contents write permission to update `dev`.
 
 ## Homebrew
 
@@ -81,6 +101,7 @@ refresh the release artifacts, and retry the tap pull request.
 2. Run the **Release** workflow from GitHub Actions.
 3. Confirm the workflow created or reused the expected `v0.1.x` tag.
 4. Review the generated GitHub Release artifacts and checksums.
+   Confirm it is marked **Latest**, and verify both Go install forms above.
 5. Merge the generated `flexdinesh/homebrew-tap` pull request after tap CI passes.
 6. Verify with `brew install --cask flexdinesh/tap/checksy` and `checksy --version`.
 
