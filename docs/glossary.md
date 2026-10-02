@@ -8,7 +8,7 @@ the `flexdinesh/homebrew-tap` tap for stable Homebrew installs.
 ## Stable Release
 
 A SemVer Git tag on `main`, such as `v0.1.0`, that GoReleaser turns into GitHub
-Release artifacts and a Homebrew cask update.
+Release artifacts. The release workflow also opens a Homebrew formula update.
 
 ## GoReleaser Snapshot
 

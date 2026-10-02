@@ -70,4 +70,38 @@ jobs:
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+
+      - name: Checkout Homebrew tap
+        uses: actions/checkout@v4
+        with:
+          repository: flexdinesh/homebrew-tap
+          ref: main
+          path: homebrew-tap
+          token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+
+      - name: Generate Homebrew formula
+        env:
+          RELEASE_TAG: ${{ steps.tag.outputs.tag }}
+        run: |
+          curl --fail --location --retry 3 \
+            "https://github.com/flexdinesh/checksy/archive/refs/tags/${RELEASE_TAG}.tar.gz" \
+            --output "$RUNNER_TEMP/checksy-source.tar.gz"
+          mkdir -p homebrew-tap/Formula
+          go run ./tools/homebrew-formula -tag "$RELEASE_TAG" \
+            -archive "$RUNNER_TEMP/checksy-source.tar.gz" > homebrew-tap/Formula/checksy.rb
+          rm -f homebrew-tap/Casks/checksy.rb
+
+      - name: Open Homebrew tap pull request
+        uses: peter-evans/create-pull-request@v8
+        with:
+          token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          path: homebrew-tap
+          base: main
+          branch: checksy-${{ steps.tag.outputs.tag }}
+          commit-message: "Update checksy to ${{ steps.tag.outputs.tag }}"
+          author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+          title: "Update checksy to ${{ steps.tag.outputs.tag }}"
+          body: |
+            - Build checksy from the checksum-verified release source with Go.
+            - Replace the prebuilt cask to avoid macOS Gatekeeper warnings.
+            - Install with `brew install flexdinesh/tap/checksy`.

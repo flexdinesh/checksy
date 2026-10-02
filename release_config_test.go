@@ -196,42 +196,30 @@ func TestStableReleaseWorkflowPublishesSemverTags(t *testing.T) {
 	}
 }
 
-func TestGoReleaserPublishesHomebrewTapPullRequest(t *testing.T) {
+func TestStableReleasePublishesHomebrewSourceFormulaPullRequest(t *testing.T) {
 	config := readFile(t, ".goreleaser.yaml")
-	for _, want := range []string{
-		"homebrew_casks:",
-		"name: checksy",
-		"owner: flexdinesh",
-		"name: homebrew-tap",
-		"token: \"{{ .Env.HOMEBREW_TAP_TOKEN }}\"",
-		"branch: \"checksy-{{ .Tag }}\"",
-		"pull_request:",
-		"enabled: true",
-		"directory: Casks",
-		"homepage: https://github.com/flexdinesh/checksy",
-		"binaries:",
-		"- checksy",
-		"caveats:",
-		"Run `checksy --help` to view available command-line options.",
-	} {
-		if !strings.Contains(config, want) {
-			t.Fatalf(".goreleaser.yaml should contain %q", want)
-		}
-	}
-
 	for _, deprecated := range []string{
 		"brews:",
-		"directory: Formula",
+		"homebrew_casks:",
 	} {
 		if strings.Contains(config, deprecated) {
-			t.Fatalf(".goreleaser.yaml should not contain deprecated formula config %q", deprecated)
+			t.Fatalf("GoReleaser must not publish a prebuilt Homebrew package: %q", deprecated)
 		}
 	}
 
 	workflow := readFile(t, ".github/workflows/release.yml")
 	for _, want := range []string{
 		"version: v2.18.0",
-		"HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}",
+		"repository: flexdinesh/homebrew-tap",
+		"token: ${{ secrets.HOMEBREW_TAP_TOKEN }}",
+		"https://github.com/flexdinesh/checksy/archive/refs/tags/${RELEASE_TAG}.tar.gz",
+		"go run ./tools/homebrew-formula -tag \"$RELEASE_TAG\"",
+		"-archive \"$RUNNER_TEMP/checksy-source.tar.gz\" > homebrew-tap/Formula/checksy.rb",
+		"rm -f homebrew-tap/Casks/checksy.rb",
+		"uses: peter-evans/create-pull-request@v8",
+		"path: homebrew-tap",
+		"base: main",
+		"branch: checksy-${{ steps.tag.outputs.tag }}",
 	} {
 		if !strings.Contains(workflow, want) {
 			t.Fatalf("release workflow should contain %q", want)
@@ -242,7 +230,8 @@ func TestGoReleaserPublishesHomebrewTapPullRequest(t *testing.T) {
 func TestReleaseDocsExplainHomebrewChannel(t *testing.T) {
 	readme := readFile(t, "README.md")
 	for _, want := range []string{
-		"brew install --cask flexdinesh/tap/checksy",
+		"brew install flexdinesh/tap/checksy",
+		"brew uninstall --cask checksy",
 		"go install github.com/flexdinesh/checksy/cmd/checksy@latest",
 	} {
 		if !strings.Contains(readme, want) {
@@ -254,7 +243,8 @@ func TestReleaseDocsExplainHomebrewChannel(t *testing.T) {
 	for _, want := range []string{
 		"HOMEBREW_TAP_TOKEN",
 		"v0.1.0",
-		"brew install --cask flexdinesh/tap/checksy",
+		"brew install flexdinesh/tap/checksy",
+		"brew uninstall --cask checksy",
 		"goreleaser release --snapshot --clean",
 		"Do not create a moving `latest` tag",
 	} {

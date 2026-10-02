@@ -40,7 +40,7 @@ version. The old workflow triggered by pushes to `dev` has been removed.
 
 ```bash
 # Stable Homebrew install.
-brew install --cask flexdinesh/tap/checksy
+brew install flexdinesh/tap/checksy
 
 # Alternative latest Go release.
 go install github.com/flexdinesh/checksy/cmd/checksy@latest
@@ -82,9 +82,23 @@ built-in `GITHUB_TOKEN` with contents write permission to update `dev`.
 
 ## Homebrew
 
-The Homebrew cask installs prebuilt release archives instead of building from
-source. `checksy` does not declare Homebrew runtime dependencies because the
-released binary contains the connectivity-checking implementation.
+The Homebrew formula builds the tagged source archive locally. Go is a build
+dependency, with no Homebrew runtime dependencies. This avoids the Gatekeeper
+warnings caused by quarantined, unsigned prebuilt cask binaries on macOS.
+
+After GoReleaser publishes the release, the workflow downloads its source archive
+and runs `tools/homebrew-formula` to generate `Formula/checksy.rb` with that
+archive's SHA-256. It opens a tap pull request containing the formula and removes
+the old `Casks/checksy.rb`. GoReleaser publishes binary archives independently;
+it no longer publishes a cask or uses its deprecated formula publisher.
+
+Existing cask users must migrate once after the tap pull request merges:
+
+```bash
+brew uninstall --cask checksy
+brew update
+brew install flexdinesh/tap/checksy
+```
 
 The tap pull request branch is deterministic per version, such as
 `checksy-v0.1.0`, so rerunning a failed release updates the same tap pull
@@ -103,7 +117,7 @@ refresh the release artifacts, and retry the tap pull request.
 4. Review the generated GitHub Release artifacts and checksums.
    Confirm it is marked **Latest**, and verify both Go install forms above.
 5. Merge the generated `flexdinesh/homebrew-tap` pull request after tap CI passes.
-6. Verify with `brew install --cask flexdinesh/tap/checksy` and `checksy --version`.
+6. Verify with `brew install flexdinesh/tap/checksy` and `checksy --version`.
 
 ## Verify Locally
 
@@ -113,9 +127,20 @@ go build ./cmd/checksy
 goreleaser release --snapshot --clean
 ```
 
-The workflows pin GoReleaser `v2.18.0` so releases can publish Homebrew casks
-through `homebrew_casks`. The snapshot command remains useful locally because it
-verifies archive and cask generation without publishing.
+The workflow pins GoReleaser `v2.18.0`. The snapshot command verifies binary
+archive generation without publishing. Verify formula generation separately:
+
+```bash
+curl --fail --location --retry 3 \
+  https://github.com/flexdinesh/checksy/archive/refs/tags/v0.1.5.tar.gz \
+  --output /tmp/checksy-source.tar.gz
+go run ./tools/homebrew-formula -tag v0.1.5 \
+  -archive /tmp/checksy-source.tar.gz > /tmp/checksy.rb
+ruby -c /tmp/checksy.rb
+```
+
+The tap's macOS CI runs Homebrew style, audit, install, and formula tests before
+the generated update is merged.
 
 ## Switching Minor Versions
 
