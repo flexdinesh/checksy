@@ -1,0 +1,19 @@
+class Checksy < Formula
+  desc "Internet connectivity checker with HTTP, ping, DNS, and IP diagnostics"
+  homepage "https://github.com/flexdinesh/checksy"
+  url "https://github.com/flexdinesh/checksy/archive/refs/tags/{{.Tag}}.tar.gz"
+  sha256 "{{.SHA256}}"
+
+  depends_on "go" => :build
+
+  def install
+    ENV["CGO_ENABLED"] = "0"
+    ldflags = "-X github.com/flexdinesh/checksy/internal/version.Version=#{version}"
+    system "go", "build", *std_go_args(ldflags:), "./cmd/checksy"
+  end
+
+  test do
+    assert_match "checksy #{version}", shell_output("#{bin}/checksy --version")
+    assert_match "Usage: checksy", shell_output("#{bin}/checksy --help")
+  end
+end
